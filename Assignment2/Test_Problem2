@@ -1,44 +1,49 @@
-import itertools
+from Node import Node
+import Queue
 
-o = list(xrange(1,23))
-perm_iterator=itertools.permutations(o)
-final_min_list = []
-final_min_list_val=20000
-temp=[]
-for i in perm_iterator:
-    print "New Iterator",
-    print i
-    j = 0
-    maxx = 0
-    for k in range(1,4):
-        m=abs(i[j]-i[k])
-        if maxx < m:
-            maxx=m
-    p=1
-    k=4
-    l=5
-    while k < len(i):
-        local_max = 0
-        m = abs(i[p]-i[k])
-        n = abs(i[p]-i[k+1])
-        local_max = m
-        if m < n:
-            local_max = n
-        if local_max > maxx:
-            maxx = local_max
 
-        k += 2
-        p += 1
-    if maxx<final_min_list_val:
-        final_min_list=i
-        final_min_list_val=maxx
-        if(maxx==3):
-            temp.append(i)
-        '''
-        if final_min_list_val <= 8:
-            print "New min list value %d" % final_min_list_val ,
-            print final_min_list
-        '''
-print final_min_list
-print final_min_list_val
-print temp
+def find_max_difference(tree):
+
+    q=Queue.Queue()
+    q.put(tree)
+    diff=0
+    max_node={}
+    while (not q.empty()):
+
+        t = q.get()
+        for k in t.children:
+            m = abs(t.val-k.val)
+            if(m>=diff):
+                diff=m
+                max_node.setdefault(m,[]).append([k,t])
+            # Used below to avoid putting leaf node in Queue
+            if k.children is not None:
+                q.put(k)
+    return max_node
+
+
+def create_b_tree(sub_tree):
+    mid_element = len(sub_tree)/2
+    new_root = Node(sub_tree.pop(mid_element))
+    if len(sub_tree)==2:
+        new_root.add_children(Node(sub_tree[0]))
+        new_root.add_children(Node(sub_tree[1]))
+    else:
+        new_root.add_children(create_b_tree(sub_tree[0:len(sub_tree)/2]))
+        new_root.add_children(create_b_tree(sub_tree[len(sub_tree)/2: len(sub_tree)]))
+    return new_root
+
+
+def create_initial_tree(initial_list_size):
+    initial_list = range(1,(initial_list_size+1))
+    root = Node(initial_list.pop((initial_list_size/2) -1))
+    step=len(initial_list)/3
+    chunks=[initial_list[x: (x+step)] for x in range(0, len(initial_list), step)]
+    for i in chunks:
+        root.add_children(create_b_tree(i))
+    return root
+
+l = 22
+r = create_initial_tree(l)
+m=find_max_difference(r)
+print r
