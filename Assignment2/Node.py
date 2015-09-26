@@ -7,6 +7,7 @@ class Node:
 
         self.val=identifier
         self.children=[]
+        self.swap=[]
 
     def add_children(self,child):
 

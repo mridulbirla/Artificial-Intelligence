@@ -2,24 +2,31 @@ from Node import Node
 import Queue
 
 
-def find_max_difference(tree):
+def traverse_tree(tree, flag):
 
     q=Queue.Queue()
     q.put(tree)
     diff=0
     max_node={}
-    while (not q.empty()):
-
+    tree_dict={}
+    while not q.empty():
         t = q.get()
+        if flag=="Dictionary": tree_dict[t.val]=t
+
         for k in t.children:
-            m = abs(t.val-k.val)
-            if(m>=diff):
-                diff=m
-                max_node.setdefault(m,[]).append([k,t])
-            # Used below to avoid putting leaf node in Queue
-            if k.children is not None:
+            if flag=="Maximum":
+                m = abs(t.val-k.val)
+                if(m>=diff):
+                    diff=m
+                    max_node.setdefault(m,[]).append([k,t])
+
+                # Used below to avoid putting leaf node in Queue
+                if k.children is not None:
+                    q.put(k)
+            else:
                 q.put(k)
-    return max_node
+    if flag=="Maximum": return max_node
+    if flag=="Dictionary": return tree_dict
 
 
 def create_b_tree(sub_tree):
@@ -43,7 +50,12 @@ def create_initial_tree(initial_list_size):
         root.add_children(create_b_tree(i))
     return root
 
-l = 22
-r = create_initial_tree(l)
-m=find_max_difference(r)
-print r
+
+def main():
+    l = 22
+    r = create_initial_tree(l)
+    tree_dict=traverse_tree(r,"Dictionary")
+    score=traverse_tree(r,"Maximum")
+    print r
+
+main()
