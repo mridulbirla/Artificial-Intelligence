@@ -9,10 +9,17 @@ def traverse_tree(tree, flag):
     diff=0
     max_node={}
     tree_dict={}
+    lower_child_dict={}
+    root_val=tree.val
+    bfs_tree=[]
     while not q.empty():
         t = q.get()
-        if flag=="Dictionary": tree_dict[t.val]=t
-
+        if flag=="Dictionary":
+            tree_dict[t.val]=t
+        elif flag =="Lower Child" and t.val < root_val:
+            lower_child_dict[t.val]=t
+        elif flag== "BFS":
+             bfs_tree.append(t.val)
         for k in t.children:
             if flag=="Maximum":
                 m = abs(t.val-k.val)
@@ -27,7 +34,8 @@ def traverse_tree(tree, flag):
                 q.put(k)
     if flag=="Maximum": return max_node
     if flag=="Dictionary": return tree_dict
-
+    if flag =="Lower Child": return lower_child_dict
+    if flag =="BFS": return bfs_tree
 
 def create_b_tree(sub_tree):
     mid_element = len(sub_tree)/2
@@ -51,11 +59,20 @@ def create_initial_tree(initial_list_size):
     return root
 
 
+def generate_minimal_tree(tree):
+    tree_dict = traverse_tree(tree, "Dictionary")
+    score_dict=traverse_tree(tree,"Maximum")
+    max_dict=score_dict[max(score_dict.keys())]
+    for m in max_dict:
+            if m[1] >m[0]:
+                c=traverse_tree(m, "Lower Child")
+              #  swap(min(c.keys())
+
+
 def main():
     l = 22
     r = create_initial_tree(l)
-    tree_dict=traverse_tree(r,"Dictionary")
-    score=traverse_tree(r,"Maximum")
-    print r
+    while True:
+        print r
 
 main()
