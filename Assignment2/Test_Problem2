@@ -1,78 +1,121 @@
-from Node import Node
+import copy
 import Queue
 
+from Node import Node
 
+
+# This function has combined various functionality namely finding the maximum difference child, BFS, creating dictionary
 def traverse_tree(tree, flag):
-
-    q=Queue.Queue()
-    q.put(tree)
-    diff=0
-    max_node={}
-    tree_dict={}
-    lower_child_dict={}
-    root_val=tree.val
-    bfs_tree=[]
+    q = Queue.Queue()
+    q.put([tree, ''])
+    diff = 0
+    max_node = {}
+    tree_dict = {}
+    lower_child_dict = {}
+    root_val = tree.val
+    bfs_tree = []
     while not q.empty():
-        t = q.get()
-        if flag=="Dictionary":
-            tree_dict[t.val]=t
-        elif flag =="Lower Child" and t.val < root_val:
-            lower_child_dict[t.val]=t
-        elif flag== "BFS":
-             bfs_tree.append(t.val)
+        pair = q.get()
+        t = pair[0]
+        if flag == "Dictionary":
+            tree_dict[t.val] = t
+        elif flag == "Lower Child" and t.val < root_val:
+            lower_child_dict[t.val] = pair
+        elif flag == "BFS":
+            bfs_tree.append(str(t.val))
         for k in t.children:
-            if flag=="Maximum":
-                m = abs(t.val-k.val)
-                if(m>=diff):
-                    diff=m
-                    max_node.setdefault(m,[]).append([k,t])
+            if flag == "Maximum":
+                m = abs(t.val - k.val)
+                if (m >= diff):
+                    diff = m
+                    max_node.setdefault(m, []).append([t, k])
 
                 # Used below to avoid putting leaf node in Queue
                 if k.children is not None:
-                    q.put(k)
+                    q.put([k, t])
             else:
-                q.put(k)
-    if flag=="Maximum": return max_node
-    if flag=="Dictionary": return tree_dict
-    if flag =="Lower Child": return lower_child_dict
-    if flag =="BFS": return bfs_tree
+                q.put([k, t])
+    if flag == "Maximum": return max_node
+    if flag == "Dictionary": return tree_dict
+    if flag == "Lower Child": return lower_child_dict
+    if flag == "BFS": return bfs_tree
 
+
+# This is a recursive function to create a tree which is the start state for the program.
 def create_b_tree(sub_tree):
-    mid_element = len(sub_tree)/2
+    mid_element = len(sub_tree) / 2
     new_root = Node(sub_tree.pop(mid_element))
-    if len(sub_tree)==2:
+    if len(sub_tree) == 2:
         new_root.add_children(Node(sub_tree[0]))
         new_root.add_children(Node(sub_tree[1]))
     else:
-        new_root.add_children(create_b_tree(sub_tree[0:len(sub_tree)/2]))
-        new_root.add_children(create_b_tree(sub_tree[len(sub_tree)/2: len(sub_tree)]))
+        new_root.add_children(create_b_tree(sub_tree[0:len(sub_tree) / 2]))
+        new_root.add_children(create_b_tree(sub_tree[len(sub_tree) / 2: len(sub_tree)]))
     return new_root
 
 
 def create_initial_tree(initial_list_size):
-    initial_list = range(1,(initial_list_size+1))
-    root = Node(initial_list.pop((initial_list_size/2) -1))
-    step=len(initial_list)/3
-    chunks=[initial_list[x: (x+step)] for x in range(0, len(initial_list), step)]
+    initial_list = range(1, (initial_list_size + 1))
+    root = Node(initial_list.pop((initial_list_size / 2) - 1))
+    step = len(initial_list) / 3
+    chunks = [initial_list[x: (x + step)] for x in range(0, len(initial_list), step)]
+
+    # For each child of the root tree create Binary tree
     for i in chunks:
         root.add_children(create_b_tree(i))
     return root
 
 
+def is_visited(v, c):
+    return ''.join(traverse_tree(c, "BFS")) in v
+
+
+def swap_nodes(target_node, main_node, initial_node):
+    c = target_node.get_children()
+    target_node.children = initial_node.children
+    target_node.children = c
+    main_node.children.remove(initial_node)
+    main_node.children.append(target_node)
+    main_node.sort_children()
+
+
 def generate_minimal_tree(tree):
-    tree_dict = traverse_tree(tree, "Dictionary")
-    score_dict=traverse_tree(tree,"Maximum")
-    max_dict=score_dict[max(score_dict.keys())]
-    for m in max_dict:
-            if m[1] >m[0]:
-                c=traverse_tree(m, "Lower Child")
-              #  swap(min(c.keys())
+    optimal_queue = Queue.PriorityQueue()
+    visited_tree = []
+    score_dict = traverse_tree(tree, "Maximum")
+    optimal_queue.put([tree, score_dict], max(score_dict.keys()))
+    global_minima = {max(score_dict.keys()): tree}
+    while True:
+
+        if optimal_queue.empty():
+            break
+        current_item = optimal_queue.get()
+        current_tree = current_item[0]
+        score_dict = current_item[1]
+        if not is_visited(visited_tree, current_tree):
+
+            # Find the maximum difference edge
+            tree_dict = traverse_tree(current_tree, "Dictionary")
+            current_score = max(score_dict.keys())
+            max_dict = score_dict[current_score]
+
+            # For each maximum edge
+            for m in max_dict:
+                if m[1].val > m[0].val:
+                    for i in reversed(range((m[0].val + 1), m[1].val)):
+                        temp_tree = copy.deepcopy(tree)
+                        swap_nodes(tree_dict[i], m[1], m[2])
+                        score_dict = traverse_tree(current_tree, "Maximum")
+                        temp_max = max(score_dict.keys())
+                        if temp_max <= current_score:
+                            optimal_queue.put([temp_tree, score_dict], max(score_dict.keys()))
+                            global_minima.setdefault(temp_max, []).append(temp_tree)
 
 
 def main():
-    l = 22
+    l = 10
     r = create_initial_tree(l)
-    while True:
-        print r
+    generate_minimal_tree(r)
+
 
 main()
