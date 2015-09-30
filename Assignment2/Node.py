@@ -3,11 +3,12 @@ __author__ = 'mridul'
 
 class Node:
 
-    def __init__(self,identifier):
+    def __init__(self,identifier,parent=None):
 
         self.val=identifier
         self.children=[]
         self.swap=[]
+        self.parent=parent
 
     def add_children(self,child):
 
