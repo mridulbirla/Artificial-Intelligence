@@ -145,9 +145,10 @@ def generate_minimal_tree(tree):
                         temp_max = max(score_dict.keys())
                        # print temp_max
                         if temp_max <= current_score:
-                            optimal_queue.put([temp_tree, score_dict], max(score_dict.keys()))
-                            global_minima.setdefault(temp_max, []).append(temp_tree)
-                            print min(global_minima.keys())
+                            if (temp_max not in global_minima.keys()) or (temp_max in global_minima.keys() and len(global_minima[temp_max]) < 100):
+                                optimal_queue.put([temp_tree, score_dict], max(score_dict.keys()))
+                                global_minima.setdefault(temp_max, []).append(temp_tree)
+                                print min(global_minima.keys())
                 elif m[1].val < m[0].val:
                     for i in reversed(range((m[1].val + 1), m[0].val)):
                         temp_max=1000000
@@ -161,13 +162,14 @@ def generate_minimal_tree(tree):
                         temp_max = max(score_dict.keys())
                        # print temp_max
                         if temp_max <= current_score:
-                            optimal_queue.put([temp_tree, score_dict], max(score_dict.keys()))
-                            global_minima.setdefault(temp_max, []).append(temp_tree)
-                            print min(global_minima.keys())
+                            if (temp_max not in global_minima.keys()) or (temp_max in global_minima.keys() and len(global_minima[temp_max]) < 100):
+                                optimal_queue.put([temp_tree, score_dict], max(score_dict.keys()))
+                                global_minima.setdefault(temp_max, []).append(temp_tree)
+                                print min(global_minima.keys())
 
 
 def main():
-    l = 46
+    l = 94
     r = create_initial_tree(l)
     generate_minimal_tree(r)
 
